@@ -23,10 +23,15 @@
             // execute statement
             $result = $stmt->execute();
 
+
             if($result) {
-                $_SESSION["user"] = ["username" => $username, "email" => $email];
+                $userid = $conn->insert_id;
+
+                $_SESSION["user"] = ["username" => $username, "email" => $email, "user_id" => $userid];
                 // redirect to homepage
                 header("location: /forum");
+
+                exit;
             } else {
                 throw new Exception("Error while registering");
             }
@@ -37,6 +42,7 @@
         $email = $_POST["email"];
         $password = $_POST["password"];
         $username = "";
+        $userid = 0;
 
         // Prepare the statement to prevent SQL injection
         $stmt = $conn->prepare("SELECT username, password FROM users WHERE email = ?");
@@ -49,11 +55,12 @@
         
             foreach($result as $row) {
                 $username = $row["username"];
+                $userid = $row["id"];
             }
             
             // verify password
             if(password_verify($password, $row["password"])){
-                $_SESSION["user"] = ["username" => $username, "email" => $email];
+                $_SESSION["user"] = ["username" => $username, "email" => $email, "user_id" => $userid];
 
                 header("location: /forum");
 
@@ -67,5 +74,36 @@
     } else if (isset($_GET["logout"])) {
         session_unset();
         header("location: /forum");
+    } else if (isset($_POST["ask"])) {
+        $title = $_POST["title"];
+        $description = $_POST["description"];
+        $category_id = $_POST["category"];
+        $user_id = $_SESSION["user"]["userid"];
+        $question_id = 0;
+
+        print_r($_SESSION["user"]);
+
+        try {
+            // Throw exceptions on MySQLi errors
+            mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+
+            $stmt = $conn->prepare("INSERT INTO `questions` (`title`, `description`, `category_id`, `user_id`) VALUES (?, ?, ?, ?)");
+            $stmt->bind_param("ssii", $title, $description, $category_id, $user_id);
+
+            $result = $stmt->execute();
+
+            if ($result) {
+                $question_id = $conn->insert_id;
+                header("location: /forum");
+                exit;
+            } else {
+                throw new Exception("Failed to insert question");
+            }
+
+        } catch (mysqli_sql_exception $e) {
+            echo "Database Error: " . $e->getMessage();
+        } catch (Exception $e) {
+            echo "Error: " . $e->getMessage();
+        }
     }
 ?>
