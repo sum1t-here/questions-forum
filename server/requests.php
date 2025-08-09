@@ -24,13 +24,48 @@
             $result = $stmt->execute();
 
             if($result) {
-                echo "New user registered";
                 $_SESSION["user"] = ["username" => $username, "email" => $email];
+                // redirect to homepage
+                header("location: /forum");
             } else {
                 throw new Exception("Error while registering");
             }
         } catch (Exception $e) {
             echo "Registration failed: " . $e->getMessage();
+        } 
+    } else if (isset($_POST["login"])) {
+        $email = $_POST["email"];
+        $password = $_POST["password"];
+        $username = "";
+
+        // Prepare the statement to prevent SQL injection
+        $stmt = $conn->prepare("SELECT username, password FROM users WHERE email = ?");
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if($result->num_rows == 1) {
+            $row = $result->fetch_assoc();
+        
+            foreach($result as $row) {
+                $username = $row["username"];
+            }
+            
+            // verify password
+            if(password_verify($password, $row["password"])){
+                $_SESSION["user"] = ["username" => $username, "email" => $email];
+
+                header("location: /forum");
+
+                exit;
+            } else {
+                echo "Invalid password.";
+            }
+        } else {
+            echo "No account find with that email";
         }
+    } else if (isset($_GET["logout"])) {
+        session_unset();
+        header("location: /forum");
     }
 ?>

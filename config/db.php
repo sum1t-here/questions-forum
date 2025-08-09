@@ -15,7 +15,7 @@
             $_ENV["DB_NAME"]
         );
 
-        echo "Connection is a success";
+        // echo "Connection is a success";
     } catch (mysqli_sql_exception $e) {
         echo "Connection failed: " . $e->getMessage();
     }
