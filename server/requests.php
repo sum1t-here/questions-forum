@@ -81,7 +81,7 @@
         $user_id = $_SESSION["user"]["userid"];
         $question_id = 0;
 
-        print_r($_SESSION["user"]);
+        // print_r($_SESSION["user"]);
 
         try {
             // Throw exceptions on MySQLi errors
@@ -98,6 +98,31 @@
                 exit;
             } else {
                 throw new Exception("Failed to insert question");
+            }
+
+        } catch (mysqli_sql_exception $e) {
+            echo "Database Error: " . $e->getMessage();
+        } catch (Exception $e) {
+            echo "Error: " . $e->getMessage();
+        }
+    } else if ($_POST["answer"]) {
+        $answer = $_POST["answer"];
+        $q_id = $_POST["q_id"];
+        $user_id = $_SESSION["user"]["userid"];
+
+        try {
+            mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+
+            $stmt = $conn->prepare("INSERT INTO `answers` (`answer`, `question_id`, `user_id`) VALUES (?, ?, ?)");
+            $stmt->bind_param("sii", $answer, $q_id, $user_id);
+
+            $result = $stmt->execute();
+
+            if ($result) {
+                header("location: /forum/?q-id=$q_id");
+                exit;
+            } else {
+                throw new Exception("Failed to insert answer");
             }
 
         } catch (mysqli_sql_exception $e) {
