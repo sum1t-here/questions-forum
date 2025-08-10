@@ -39,7 +39,7 @@
                         . htmlspecialchars($row['description']) .
                     '</p>
                 </div>
-
+                
                 <div class="card-footer bg-light">
                     <form method="post" action="./server/requests.php" class="mt-3">
                         <div class="mb-3">
@@ -65,5 +65,7 @@
         } catch (Exception $e) {
             echo '<div class="alert alert-danger">Database Error: ' . htmlspecialchars($e->getMessage()) . '</div>';
         }
+        include("./client/answers.php");
     ?>
+    
 </div>
