@@ -21,6 +21,9 @@
         } else if(isset($_GET['q-id'])) {
             $qid = $_GET['q-id'];
             include("./client/question-details.php");
+        } else if(isset($_GET['cat-id'])) {
+            $cid = $_GET['cat-id'];
+            include("./client/questions.php");
         } else {
             include("./client/questions.php");
         }
